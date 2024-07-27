@@ -100,7 +100,7 @@ def getEmptySquares(board):
 def removeNums(board):
     filled_squares = getFilledSquares(board)
     filled_squares_count = len(filled_squares)
-    rounds = 5
+    rounds = 10
     while rounds > 0 and filled_squares_count >= 17:
         row, col = filled_squares.pop()
         filled_squares_count -= 1
@@ -140,8 +140,12 @@ def drawGrid(screen, board, left_margin, top_margin):
             pygame.draw.rect(screen, (0,0,0), (left_margin + j * gridsize * 3, top_margin + i * gridsize * 3, gridsize * 3, gridsize * 3), 3)
 
 def drawSelection(screen, board, left_margin, top_margin, selected_coords):
+    for i in range(9):
+        for j in range(9):
+            if (i,j) not in empty_squares:
+                pygame.draw.rect(screen, (220,220,220), (left_margin + j * gridsize, top_margin + i * gridsize, gridsize, gridsize))
     i, j = selected_coords
-    pygame.draw.rect(screen, (200,200,200), (left_margin + j * gridsize, top_margin + i * gridsize, gridsize, gridsize))
+    pygame.draw.rect(screen, (255,220,0), (left_margin + j * gridsize, top_margin + i * gridsize, gridsize, gridsize))
 
 def drawButtons(screen):
     generate_board_button.drawButton(screen, 10, 8, 'Generate Board')
@@ -193,7 +197,7 @@ x_button = Button(600,300,255,50)
 board = [['.' for i in range(9)] for j in range(9)]
 empty_squares = getEmptySquares(board)
 current_num = 0
-selected_coords = (-1,-1)
+selected_coords = (-10,-10)
 
 ############################# MAIN GAME LOOP ###############################
 while True:
@@ -211,7 +215,6 @@ while True:
                 
             if solve_button.clickButton(mx,my):
                 fillBoard(0,0, board, std_num_list)
-                empty_squares = []
             
             if x_button.clickButton(mx,my):
                 if selected_coords in empty_squares:
@@ -221,14 +224,13 @@ while True:
                 row = i // 3
                 col = i % 3
                 if mx in range(col*85 + 600, col*85 + 600 + 85) and my in range(row*85 + 40, row*85 + 40 + 85):
-                    if selected_coords in empty_squares:
+                    if selected_coords in empty_squares and 81 - len(empty_squares) > 0:
                         board[selected_coords[0]][selected_coords[1]] = str(i+1)
 
             for i in range(9):
                 for j in range(9):
-                    if mx in range(20 + j * gridsize, 20 + j * gridsize + gridsize) and my in range(20 + i * gridsize, 20 + i * gridsize + gridsize):
+                    if mx in range(20 + j * gridsize, 20 + j * gridsize + gridsize) and my in range(20 + i * gridsize, 20 + i * gridsize + gridsize) and (i,j) in empty_squares:
                         selected_coords = (i,j)
-                        print(selected_coords)
             
     drawBackground(screen)
     drawSelection(screen, board, 20, 20, selected_coords)
