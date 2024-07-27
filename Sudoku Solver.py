@@ -1,6 +1,11 @@
 import random
 import copy
+import pygame, sys
+import time
+from pygame.locals import QUIT
+pygame.init()
 
+############################# FUNCTIONS ###############################
 def printBoard(board):
     for i in range(9):
         for j in range(9):
@@ -109,7 +114,58 @@ def generateSudoku():
     without_squares = removeNums(new_board)
     return without_squares
 
+#Pygame stuff
+def drawBackground(screen):
+    screen.fill((255,255,255))
+    pygame.display.update()
+
+def redraw(screen):
+    pygame.display.update()
+
+############################# CLASSES ###############################
+
+class Block():
+  def __init__(self, screen, letter, posx, posy, gridsize):
+    self.screen = screen
+    self.letter = letter
+    self.gridsize = gridsize
+    self.posx = posx * gridsize
+    self.posy = posy * gridsize
+    self.clr = (255, 255, 255)
+  
+  def drawBlock(self):
+    pygame.draw.rect(self.screen, self.clr, (self.posx, self.posy, self.gridsize - 2, self.blockheight - 2))
+
+  def drawText(self):
+    text = font.render(self.letter, 1, (0,0,0))
+    self.screen.blit(text,(self.posx, self.posy))
+
+
+############################# VARIABLES ###############################
+clock = pygame.time.Clock()
 std_num_list = ['1','2','3','4','5','6','7','8','9']
+
+screen = pygame.display.set_mode((900,600))
+gridsize = 10
+fps = 10
+font = pygame.font.SysFont("Arial Black", gridsize)
 
 board = generateSudoku()
 printBoard(board)
+
+solved = fillBoard(0,0,board, std_num_list)
+printBoard(solved)
+
+############################# MAIN GAME LOOP ###############################
+while True:
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            pass
+
+    drawBackground(screen)
+    redraw(screen)
+    clock.tick(30)
