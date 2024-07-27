@@ -75,7 +75,6 @@ def getSolutions(r, c, board):
     board[r][c] = '.'
     return False
 
-
 def generateFilledBoard(num_list):
     board = [['.' for i in range(9)] for j in range(9)]
     random.shuffle(num_list)
@@ -89,6 +88,14 @@ def getFilledSquares(board):
                 filled_squares.append((i,j))
     random.shuffle(filled_squares)
     return filled_squares
+
+def getEmptySquares(board):
+    empty_squares = []
+    for i in range(9):
+        for j in range(9):
+            if board[i][j] == '.':
+                empty_squares.append((i,j))
+    return empty_squares
 
 def removeNums(board):
     filled_squares = getFilledSquares(board)
@@ -122,25 +129,31 @@ def drawGrid(screen, board, left_margin, top_margin):
     for i in range(9):
         for j in range(9):
             box = board[i][j]
+            pygame.draw.rect(screen, (0,0,0), (left_margin + j * gridsize, top_margin + i * gridsize, gridsize, gridsize), 1)
+
             if box != '.':
                 text = font.render(box, 1, (0,0,0))
                 screen.blit(text,(j*gridsize + 2 * gridsize//3,i*gridsize + gridsize//2))
-            pygame.draw.rect(screen, (0,0,0), (left_margin + j * gridsize, top_margin + i * gridsize, gridsize, gridsize), 1)
 
     for i in range(3):
         for j in range(3):
             pygame.draw.rect(screen, (0,0,0), (left_margin + j * gridsize * 3, top_margin + i * gridsize * 3, gridsize * 3, gridsize * 3), 3)
 
+def drawSelection(screen, board, left_margin, top_margin, selected_coords):
+    i, j = selected_coords
+    pygame.draw.rect(screen, (200,200,200), (left_margin + j * gridsize, top_margin + i * gridsize, gridsize, gridsize))
+
 def drawButtons(screen):
     generate_board_button.drawButton(screen, 10, 8, 'Generate Board')
     solve_button.drawButton(screen, 10, 8, "Solve Board")
+    x_button.drawButton(screen, 115, 0, '×', 35)
 
 def drawKeypad(screen):
     for i in range(9):
         row = i // 3
         col = i % 3
         num_button = Button(col*85 + 600, row*85 + 40, 85, 85)
-        num_button.drawButton(screen, 32, 20, str(i), 30)
+        num_button.drawButton(screen, 32, 20, str(i+1), 30)
     
 
 ############################# CLASSES ###############################
@@ -175,13 +188,12 @@ font = pygame.font.SysFont("Arial Black", gridsize//2)
 
 generate_board_button = Button(600,400,255,50)
 solve_button = Button(600,475,255,50)
+x_button = Button(600,300,255,50)
 
-# board = generateSudoku()
-# printBoard(board)
-
-# solved = fillBoard(0,0, board, std_num_list)
-# printBoard(solved)
 board = [['.' for i in range(9)] for j in range(9)]
+empty_squares = getEmptySquares(board)
+current_num = 0
+selected_coords = (-1,-1)
 
 ############################# MAIN GAME LOOP ###############################
 while True:
@@ -195,10 +207,31 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if generate_board_button.clickButton(mx,my):
                 board = generateSudoku()
+                empty_squares = getEmptySquares(board)
+                
             if solve_button.clickButton(mx,my):
                 fillBoard(0,0, board, std_num_list)
+                empty_squares = []
+            
+            if x_button.clickButton(mx,my):
+                if selected_coords in empty_squares:
+                    board[selected_coords[0]][selected_coords[1]] = '.'
 
+            for i in range(9):
+                row = i // 3
+                col = i % 3
+                if mx in range(col*85 + 600, col*85 + 600 + 85) and my in range(row*85 + 40, row*85 + 40 + 85):
+                    if selected_coords in empty_squares:
+                        board[selected_coords[0]][selected_coords[1]] = str(i+1)
+
+            for i in range(9):
+                for j in range(9):
+                    if mx in range(20 + j * gridsize, 20 + j * gridsize + gridsize) and my in range(20 + i * gridsize, 20 + i * gridsize + gridsize):
+                        selected_coords = (i,j)
+                        print(selected_coords)
+            
     drawBackground(screen)
+    drawSelection(screen, board, 20, 20, selected_coords)
     drawGrid(screen, board, 20, 20)
     drawButtons(screen)
     drawKeypad(screen)
