@@ -117,7 +117,6 @@ def generateSudoku():
 #Pygame stuff
 def drawBackground(screen):
     screen.fill((255,255,255))
-    pygame.display.update()
 
 def drawGrid(screen, board, left_margin, top_margin):
     for i in range(9):
@@ -131,7 +130,18 @@ def drawGrid(screen, board, left_margin, top_margin):
     for i in range(3):
         for j in range(3):
             pygame.draw.rect(screen, (0,0,0), (left_margin + j * gridsize * 3, top_margin + i * gridsize * 3, gridsize * 3, gridsize * 3), 3)
-    pygame.display.update()
+
+def drawButtons(screen):
+    generate_board_button.drawButton(screen, 10, 8, 'Generate Board')
+    solve_button.drawButton(screen, 10, 8, "Solve Board")
+
+def drawKeypad(screen):
+    for i in range(9):
+        row = i // 3
+        col = i % 3
+        num_button = Button(col*85 + 600, row*85 + 40, 85, 85)
+        num_button.drawButton(screen, 32, 20, str(i), 30)
+    
 
 ############################# CLASSES ###############################
 
@@ -141,6 +151,17 @@ class Button():
         self.y = y
         self.w = w
         self.h = h
+        self.box = pygame.Rect(x,y,w,h)
+    
+    def drawButton(self, screen, left_margin, top_margin, txt = '', txt_size = 23):
+        font = pygame.font.SysFont("Arial Black", txt_size)
+        pygame.draw.rect(screen, (0,0,0), self.box, 3)
+        text = font.render(txt, 1, (0,0,0))
+        screen.blit(text,(self.x + left_margin,self.y + top_margin))
+
+    def clickButton(self,mx,my):
+        if self.box.collidepoint(mx,my):
+            return True
 
 
 ############################# VARIABLES ###############################
@@ -149,24 +170,37 @@ std_num_list = ['1','2','3','4','5','6','7','8','9']
 
 screen = pygame.display.set_mode((900,600))
 gridsize = 60
-fps = 10
+fps = 30
 font = pygame.font.SysFont("Arial Black", gridsize//2)
 
-board = generateSudoku()
-printBoard(board)
+generate_board_button = Button(600,400,255,50)
+solve_button = Button(600,475,255,50)
+
+# board = generateSudoku()
+# printBoard(board)
+
+# solved = fillBoard(0,0, board, std_num_list)
+# printBoard(solved)
+board = [['.' for i in range(9)] for j in range(9)]
 
 ############################# MAIN GAME LOOP ###############################
 while True:
     for event in pygame.event.get():
+        mx, my = pygame.mouse.get_pos()
+
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
         
         if event.type == pygame.MOUSEBUTTONDOWN:
-            solved = fillBoard(0,0, board, std_num_list)
-            printBoard(solved)
-
+            if generate_board_button.clickButton(mx,my):
+                board = generateSudoku()
+            if solve_button.clickButton(mx,my):
+                fillBoard(0,0, board, std_num_list)
 
     drawBackground(screen)
     drawGrid(screen, board, 20, 20)
+    drawButtons(screen)
+    drawKeypad(screen)
+    pygame.display.update()
     clock.tick(fps)
