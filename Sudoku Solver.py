@@ -54,6 +54,39 @@ def fillBoard(r,c, board, num_list):
                 board[r][c] = '.'
     return False
 
+def solvePygame(r,c, board, num_list):
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+
+    drawBackground(screen)
+    drawSelection(screen, board, 20, 20, selected_coords)
+    drawGrid(screen, board, 20, 20)
+    drawButtons(screen)
+    drawKeypad(screen)
+    pygame.display.update()
+    time.sleep(0.07)
+
+    if r == 8 and c == 9:
+        return True
+
+    if c == 9:
+        c = 0
+        r += 1
+
+    if (r,c) not in empty_squares:
+        return solvePygame(r,c+1, board, num_list)
+    
+    for num in num_list:
+        if isValid(r,c,num, board):
+            board[r][c] = num
+            if solvePygame(r,c+1, board, num_list):
+                return board
+            else:
+                board[r][c] = '.'
+    return False
+
 def getSolutions(r, c, board):
     if c == 9:
         c = 0
@@ -100,7 +133,7 @@ def getEmptySquares(board):
 def removeNums(board):
     filled_squares = getFilledSquares(board)
     filled_squares_count = len(filled_squares)
-    rounds = 10
+    rounds = 7
     while rounds > 0 and filled_squares_count >= 17:
         row, col = filled_squares.pop()
         filled_squares_count -= 1
@@ -214,7 +247,7 @@ while True:
                 empty_squares = getEmptySquares(board)
                 
             if solve_button.clickButton(mx,my):
-                fillBoard(0,0, board, std_num_list)
+                solvePygame(0,0, board, std_num_list)
             
             if x_button.clickButton(mx,my):
                 if selected_coords in empty_squares:
