@@ -119,26 +119,28 @@ def drawBackground(screen):
     screen.fill((255,255,255))
     pygame.display.update()
 
-def redraw(screen):
+def drawGrid(screen, board, left_margin, top_margin):
+    for i in range(9):
+        for j in range(9):
+            box = board[i][j]
+            if box != '.':
+                text = font.render(box, 1, (0,0,0))
+                screen.blit(text,(j*gridsize + 2 * gridsize//3,i*gridsize + gridsize//2))
+            pygame.draw.rect(screen, (0,0,0), (left_margin + j * gridsize, top_margin + i * gridsize, gridsize, gridsize), 1)
+
+    for i in range(3):
+        for j in range(3):
+            pygame.draw.rect(screen, (0,0,0), (left_margin + j * gridsize * 3, top_margin + i * gridsize * 3, gridsize * 3, gridsize * 3), 3)
     pygame.display.update()
 
 ############################# CLASSES ###############################
 
-class Block():
-  def __init__(self, screen, letter, posx, posy, gridsize):
-    self.screen = screen
-    self.letter = letter
-    self.gridsize = gridsize
-    self.posx = posx * gridsize
-    self.posy = posy * gridsize
-    self.clr = (255, 255, 255)
-  
-  def drawBlock(self):
-    pygame.draw.rect(self.screen, self.clr, (self.posx, self.posy, self.gridsize - 2, self.blockheight - 2))
-
-  def drawText(self):
-    text = font.render(self.letter, 1, (0,0,0))
-    self.screen.blit(text,(self.posx, self.posy))
+class Button():
+    def __init__(self, x, y, w, h):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
 
 
 ############################# VARIABLES ###############################
@@ -146,15 +148,12 @@ clock = pygame.time.Clock()
 std_num_list = ['1','2','3','4','5','6','7','8','9']
 
 screen = pygame.display.set_mode((900,600))
-gridsize = 10
+gridsize = 60
 fps = 10
-font = pygame.font.SysFont("Arial Black", gridsize)
+font = pygame.font.SysFont("Arial Black", gridsize//2)
 
 board = generateSudoku()
 printBoard(board)
-
-solved = fillBoard(0,0,board, std_num_list)
-printBoard(solved)
 
 ############################# MAIN GAME LOOP ###############################
 while True:
@@ -164,8 +163,10 @@ while True:
             sys.exit()
         
         if event.type == pygame.MOUSEBUTTONDOWN:
-            pass
+            solved = fillBoard(0,0, board, std_num_list)
+            printBoard(solved)
+
 
     drawBackground(screen)
-    redraw(screen)
-    clock.tick(30)
+    drawGrid(screen, board, 20, 20)
+    clock.tick(fps)
