@@ -158,16 +158,22 @@ def generateSudoku():
 def drawBackground(screen):
     screen.fill((255,255,255))
 
-def drawGrid(screen, board, left_margin, top_margin):
+def drawGrid(screen, board, left_margin, top_margin, txt_clr = (0,0,0)):
     for i in range(9):
         for j in range(9):
             box = board[i][j]
             pygame.draw.rect(screen, (0,0,0), (left_margin + j * gridsize, top_margin + i * gridsize, gridsize, gridsize), 1)
 
+            if (i,j) in incorrect_nums:
+                txt_clr = (255,0,0)
+            else:
+                txt_clr = (0,0,0)
+
             if box != '.':
-                text = font.render(box, 1, (0,0,0))
+                text = font.render(box, 1, txt_clr)
                 screen.blit(text,(j*gridsize + 2 * gridsize//3,i*gridsize + gridsize//2))
 
+    #draws thicker boarder around the 9 3x3 squares
     for i in range(3):
         for j in range(3):
             pygame.draw.rect(screen, (0,0,0), (left_margin + j * gridsize * 3, top_margin + i * gridsize * 3, gridsize * 3, gridsize * 3), 3)
@@ -223,14 +229,16 @@ gridsize = 60
 fps = 30
 font = pygame.font.SysFont("Arial Black", gridsize//2)
 
-generate_board_button = Button(600,400,255,50)
-solve_button = Button(600,475,255,50)
 x_button = Button(600,300,255,50)
+generate_board_button = Button(600,455,255,50)
+solve_button = Button(600,510,255,50)
+check_button = Button(600,510,255,50)
 
 board = [['.' for i in range(9)] for j in range(9)]
 empty_squares = getEmptySquares(board)
 current_num = 0
 selected_coords = (-10,-10)
+incorrect_nums = set([])
 
 ############################# MAIN GAME LOOP ###############################
 while True:
@@ -245,6 +253,7 @@ while True:
             if generate_board_button.clickButton(mx,my):
                 board = generateSudoku()
                 empty_squares = getEmptySquares(board)
+                incorrect_nums.clear()
                 
             if solve_button.clickButton(mx,my):
                 solvePygame(0,0, board, std_num_list)
@@ -252,14 +261,21 @@ while True:
             if x_button.clickButton(mx,my):
                 if selected_coords in empty_squares:
                     board[selected_coords[0]][selected_coords[1]] = '.'
+                    incorrect_nums.discard(selected_coords)
 
+            #places number on board
             for i in range(9):
                 row = i // 3
                 col = i % 3
                 if mx in range(col*85 + 600, col*85 + 600 + 85) and my in range(row*85 + 40, row*85 + 40 + 85):
                     if selected_coords in empty_squares and 81 - len(empty_squares) > 0:
+                        if isValid(selected_coords[0], selected_coords[1], str(i+1), board):
+                            incorrect_nums.discard(selected_coords)
+                        else:
+                            incorrect_nums.add(selected_coords)
                         board[selected_coords[0]][selected_coords[1]] = str(i+1)
 
+            #selects square on board
             for i in range(9):
                 for j in range(9):
                     if mx in range(20 + j * gridsize, 20 + j * gridsize + gridsize) and my in range(20 + i * gridsize, 20 + i * gridsize + gridsize) and (i,j) in empty_squares:
